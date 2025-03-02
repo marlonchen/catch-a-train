@@ -1,0 +1,32 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./resource/prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./resource/redis/data:/data
+      - ./scripts:/scripts
+    command: 
+      - sh -c "redis-server --daemonize yes && /scripts/init-redis.sh && redis-server --daemonize no"
+
+  hoverfly:
+    image: spectolabs/hoverfly:latest
+    container_name: hoverfly
+    ports:
+      - "8500:8500"  # Proxy port
+      - "8888:8888"  # Admin API port
+    environment:
+      - HOVERFLY_ADMIN_PORT=8888
+      - HOVERFLY_PROXY_PORT=8500
+    command: ["-webserver"]
