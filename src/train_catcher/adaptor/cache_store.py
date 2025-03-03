@@ -36,7 +36,8 @@ class RedisCache(CacheStore):
         return self._redis_client
 
     def get(self, cache_key: str) -> str:
-        return self._get_redis_client().get(cache_key)
+        b = self._get_redis_client().get(cache_key)
+        return b if not b else b.decode('utf-8')
 
     def set(self, cache_key: str, value: str, ttl: int) -> None:
         self._get_redis_client().setex(cache_key, ttl, value)

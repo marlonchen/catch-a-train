@@ -44,7 +44,7 @@ async def find_nearest_station(
         finder = StationFinder(STATION_FILE_PATH)
         direction = finder.find_nearest_station(lat, lon)
         notifier = Notifier(phone)
-        direction = notifier.send_walking_direction(direction)
+        notifier.send_walking_direction(direction)
         return direction
     except TimeoutException:
         raise HTTPException(status_code=429, detail="Location search in progress")

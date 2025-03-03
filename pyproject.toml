@@ -31,7 +31,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["coverage==7.4.3", "pytest==8.0.2"]
+dev = [
+    "coverage==7.4.3",
+    "pytest==8.0.2",
+    "uvicorn==0.34.0"
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

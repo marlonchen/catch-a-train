@@ -16,7 +16,8 @@ class SmsSender:
         if cls._twilio_client is None:
             cls._twilio_client = Client(
                 os.getenv('TWILIO_ACCOUNT_SID'),
-                os.getenv('TWILIO_AUTH_TOKEN')
+                os.getenv('TWILIO_AUTH_TOKEN'),
+                region='local'
             )
         return cls._twilio_client
 
@@ -26,6 +27,9 @@ class SmsSender:
         Send SMS using Twilio.
         Handles formatting of phone numbers and any Twilio errors.
         """
+        if not TWILIO_FROM_NUMBER:
+            return
+        
         try:
             # Format phone number (remove any spaces, dashes, etc)
             formatted_number = ''.join(filter(str.isdigit, to_number))

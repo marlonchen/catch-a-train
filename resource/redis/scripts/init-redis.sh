@@ -1,3 +1,11 @@
 #!/bin/bash
-redis-cli -h redis SET "apikey:123" "enabled"
+
+redis-server --daemonize yes && sleep 1
+
+redis-cli < ./init-data.redis
+redis-cli save
+redis-cli shutdown
+
+redis-server
+
 echo "Redis initialized with test data!"

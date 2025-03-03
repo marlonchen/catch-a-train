@@ -10,15 +10,12 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
 
   redis:
-    image: redis:alpine
+    build: ./resource/redis
     container_name: redis
     ports:
       - "6379:6379"
     volumes:
       - ./resource/redis/data:/data
-      - ./scripts:/scripts
-    command: 
-      - sh -c "redis-server --daemonize yes && /scripts/init-redis.sh && redis-server --daemonize no"
 
   hoverfly:
     image: spectolabs/hoverfly:latest

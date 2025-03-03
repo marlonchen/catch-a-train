@@ -1,0 +1,1 @@
+curl -H "Content-Type: application/json" -H "X-API-Key: 123" "http://0.0.0.0:8000/nearest_station?lat=39.9726&lon=-75.1602&phone=5555555"
