@@ -3,7 +3,9 @@ from typing import Optional
 from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.security import APIKeyHeader
 
-from train_catcher.adaptor.dist_cache import the_cache
+from train_catcher.adaptor.cache_store import the_cache
+from train_catcher.data.path import STATION_FILE_PATH
+from train_catcher.service.notifier import Notifier
 from train_catcher.service.persistence import TimeoutException
 from train_catcher.service.station_finder import StationFinder
 
@@ -39,9 +41,11 @@ async def find_nearest_station(
     api_key: str = Depends(_verify_api_key)
 ):
     try:
-        finder = StationFinder()
-        station = finder.find_nearest_station(lat, lon)
-        return station
+        finder = StationFinder(STATION_FILE_PATH)
+        direction = finder.find_nearest_station(lat, lon)
+        notifier = Notifier(phone)
+        direction = notifier.send_walking_direction(direction)
+        return direction
     except TimeoutException:
         raise HTTPException(status_code=429, detail="Location search in progress")
     except Exception as e:

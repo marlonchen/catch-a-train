@@ -4,8 +4,9 @@ import time
 from geopy.distance import geodesic
 from prometheus_client import Counter, Histogram
 
+from train_catcher.adaptor.direction_api import DirectionApi
 from train_catcher.adaptor.kmz_reader import KmzReader
-from train_catcher.service.notification import NotificationService
+from train_catcher.service.geojson_builder import GeoJsonBuilder
 from train_catcher.service.persistence import PersistenceService
 
 # Metrics
@@ -16,27 +17,11 @@ CACHE_HITS = Counter('station_finder_cache_hits_total', 'Cache hits')
 
 class StationFinder:
     _persistence_service: PersistenceService = PersistenceService()
-    _notification_service: NotificationService = NotificationService()
     
     def __init__(self, kmz_file: str):
         self._kmz_file = kmz_file
 
-    @staticmethod
-    def _to_geojson(station: dict, distance: float) -> dict:
-        return {
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [float(station['Longitude']), float(station['Latitude'])]
-            },
-            "properties": {
-                "name": station['Station'],
-                "line": station['Line'],
-                "distance": distance
-            }
-        }        
-
-    def _find_nearest_station(self, lat: float, lon: float) -> dict:
+    def _find_it(self, lat: float, lon: float) -> dict:
         nearest_station = None
         min_distance = float('inf')
         
@@ -52,7 +37,13 @@ class StationFinder:
                 min_distance = distance
                 nearest_station = station
         
-        return self._to_geojson(nearest_station, min_distance)
+        return {
+            'Longitude': nearest_station['Longitude'],
+            'Latitude': nearest_station['Latitude'],
+            'Station': nearest_station['Station'],
+            'Line': nearest_station['Line'],
+            'Distance': min_distance
+        }
 
     def find_nearest_station(self, lat: float, lon: float) -> dict:
         """Find nearest train station and return in GeoJSON format"""
@@ -68,15 +59,21 @@ class StationFinder:
         self._persistence_service.begin_find(lat, lon)
         
         try:
-            station = self._find_nearest_station(lat, lon)
-            self._notification_service.send_walking_directions(
-                lat, lon,
-                station['geometry']['coordinates'][1],
-                station['geometry']['coordinates'][0]
+            station = self._find_it(lat, lon)
+            direction = DirectionApi.find_walking_direction(
+                lat, lon, 
+                station['Latitude'], station['Longitude']
             )
-            self._persistence_service.save_direction(lat, lon, json.dumps(station))
+
+            builder = GeoJsonBuilder()
+            builder.starting_point(lat, lon)
+            builder.destination_station(station)
+            builder.direction(direction)
+            result = builder.build()
+
+            self._persistence_service.save_direction(lat, lon, json.dumps(result))
             
             LATENCY.observe(time.time() - start_time)
-            return station
+            return result
         finally:
             self._persistence_service.end_find(lat, lon)

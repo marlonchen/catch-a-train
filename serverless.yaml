@@ -1,0 +1,38 @@
+service: catch-a-train
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+
+functions:
+  getWalkingDirections:
+    handler: train_catcher.handler.awslanbda.handle
+    events:
+      - http:
+          path: nearest_station
+          method: get
+
+resources:
+  Resources:
+    WalkingDirectionsLambdaExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: WalkingDirectionsPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: arn:aws:logs:*:*:*

@@ -2,8 +2,8 @@
 Redis for now, permanent storage later, such as dynamoDB with TTL
 """
 import time
-from train_catcher.adaptor.dist_cache import the_cache
 
+from train_catcher.adaptor.cache_store import the_cache
 
 DIRECTION_TTL = 60 * 60 * 24 * 7  # 1 week
 PROCESSING_TIMEOUT = 6  # 6 seconds

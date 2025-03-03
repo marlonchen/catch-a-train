@@ -1,7 +1,9 @@
 from functools import cache
 from zipfile import ZipFile
+
 from fastkml import kml
 from pygeoif.geometry import Point
+
 
 class KmzReader:
     @cache
