@@ -65,3 +65,20 @@
   - use serverless to start with
   - use the services that the company is comfortable to support first
 
+## Step 8 - API protection from malicious users
+
+1. First of all, we will need to create a threat model and identify what we are dealing with
+  - We might want to have an API Gateway to handle this concern, since this will probably be common for a lot of external facing services, and we can save a lot of redeployment as the threats are changing.
+  - We can use much simpler protection for traffic from API Gateway to the API, and maybe other similar APIs from architecture point of view.
+  - Perferrably we can choose from the existing services provided by cloud providers, such as AWS Shield
+
+1. We need to setup enough logging for monitoring and alerts to detect threats and attacks
+
+1. Some of the common threats, such as DDoS
+  - AWS Shield might be the first thing to look into, other solutions are available, too.
+  - Rate limiting - if an API is leaked and we can stop it early, API Gateway can help operation team to manage the upstream applications
+  - Authentication and authorization - it helps manage at user level
+
+1. Some of the best practices, such as
+  - keep TLS up-to-date
+  - dedicate a team to maintain infrastructure and network security if fundings allow, or outsource the effort 
