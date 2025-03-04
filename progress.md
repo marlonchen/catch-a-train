@@ -53,3 +53,15 @@
 
 1. Checking user's location based on radius
 
+## Step 7 - instance size
+
+* Make your API return sensible responses for anyone using from any location in the world. Explain what factors you took into consideration and what improvements you put into place.
+
+1. I checked DeepSeek and it suggested 3 options: general (m6i.xlarge), compute optimized (c7i.xlarge) and memory optimized (r7i.xlarge).
+
+1. I would pick memory optimized to start with, since we started with redis.  We can lower to general if we choose to use dynamo for caching.  -- maybe a phase 2 user story here
+
+1. other things to consider:
+  - use serverless to start with
+  - use the services that the company is comfortable to support first
+
