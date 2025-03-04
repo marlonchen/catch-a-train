@@ -47,3 +47,9 @@
 
 1. Maybe a dynamodb can be a good candidate for replacement, since it is fast, cheap and supports TTL.
 
+## Step 6 - validation
+
+* Make your API return sensible responses for anyone using from any location in the world. Explain what factors you took into consideration and what improvements you put into place.
+
+1. Checking user's location based on radius
+
