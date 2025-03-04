@@ -36,3 +36,11 @@ pytest
 ```
 ./test.sh
 ```
+
+## How to debug API
+
+1. Use unit tests or integration tests to test logic
+
+1. To test API layer, use VS Code's "FastAPI" configuration in debug panel.
+
+1. Run `./test.sh` in terminal at folder `tests/cli`
