@@ -4,8 +4,6 @@ from twilio.rest import Client
 
 from train_catcher.util import get_logger
 
-TWILIO_FROM_NUMBER = os.getenv('TWILIO_FROM_NUMBER')
-
 
 class SmsSender:
     _twilio_client: Client = None
@@ -16,8 +14,7 @@ class SmsSender:
         if cls._twilio_client is None:
             cls._twilio_client = Client(
                 os.getenv('TWILIO_ACCOUNT_SID'),
-                os.getenv('TWILIO_AUTH_TOKEN'),
-                region='local'
+                os.getenv('TWILIO_AUTH_TOKEN')
             )
         return cls._twilio_client
 
@@ -27,6 +24,7 @@ class SmsSender:
         Send SMS using Twilio.
         Handles formatting of phone numbers and any Twilio errors.
         """
+        TWILIO_FROM_NUMBER = os.getenv('TWILIO_FROM_NUMBER')
         if not TWILIO_FROM_NUMBER:
             return
         

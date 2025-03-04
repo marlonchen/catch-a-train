@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+import os
 
 import redis
 
@@ -29,7 +30,7 @@ class RedisCache(CacheStore):
     def _get_redis_client(self) -> redis.Redis:
         if self._redis_client is None:
             self._redis_client = redis.Redis(
-                host='localhost',
+                host=os.getenv('REDIS_HOST'),
                 port=6379,
                 db=0
             )
@@ -44,16 +45,3 @@ class RedisCache(CacheStore):
 
     def delete(self, cache_key: str) -> None:
         self._get_redis_client().delete(cache_key)
-
-
-class DictCache(CacheStore):
-    _dict: dict = {}
-
-    def get(self, cache_key: str) -> str:
-        return self._dict.get(cache_key)
-
-    def set(self, cache_key: str, value: str, ttl: int) -> None:
-        self._dict[cache_key] = value
-
-    def delete(self, cache_key: str) -> None:
-        del self._dict[cache_key]

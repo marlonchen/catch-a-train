@@ -1,0 +1,1 @@
+uvicorn --app-dir ../../src train_catcher.handler.restapi:app --reload

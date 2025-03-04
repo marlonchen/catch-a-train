@@ -1,1 +1,0 @@
-uvicorn train_catcher.handler.restapi:app --reload

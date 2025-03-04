@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from train_catcher.adaptor.cache_store import DictCache
+from stub.dict_cache import DictCache
 from train_catcher.adaptor.sms import SmsSender
 from train_catcher.data.path import STATION_FILE_PATH
 from train_catcher.service.notifier import Notifier
