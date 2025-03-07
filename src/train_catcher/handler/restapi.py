@@ -1,15 +1,25 @@
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Security
+from fastapi import Depends, FastAPI, HTTPException, Response, Security
 from fastapi.security import APIKeyHeader
+from prometheus_client import generate_latest
 
 from train_catcher.adaptor.cache_store import the_cache
 from train_catcher.data.rail import RAIL_SYSTEM
 from train_catcher.service.notifier import Notifier
 from train_catcher.service.persistence import TimeoutException
-from train_catcher.service.station_finder import StationFinder
+from train_catcher.service.station_finder import METRICS_REG, StationFinder
 
 app = FastAPI()
+
+# Metrics endpoint for Prometheus
+@app.get('/metrics')
+def get_metrics():
+    return Response(
+        media_type='text/plain',
+        content=generate_latest(METRICS_REG)
+    )
+
 
 # Authentication
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key")

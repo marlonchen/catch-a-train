@@ -8,6 +8,9 @@ services:
       - ./resource/prometheus:/etc/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    network_mode: host
 
   redis:
     build: ./resource/redis

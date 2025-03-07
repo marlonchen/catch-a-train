@@ -82,3 +82,20 @@
 1. Some of the best practices, such as
   - keep TLS up-to-date
   - dedicate a team to maintain infrastructure and network security if fundings allow, or outsource the effort 
+
+
+## Step 9 - metrics
+
+* Implement metrics for your API that track the number of unique locations requested over time, overall response latency as well as latency of internal architecture components, usage of any upstream APIs, and any other metrics you believe are relevant to tracking operational performance and customer satisfaction. Please explain what metrics you chose to implement and why. Metrics collection must not impact API performance.
+  * What other metrics would you need to track outside of your API to ensure your service is functioning properly?
+  * Show an example of your metrics being collected over time in a chart.
+
+1. setup Prometheus docker container for local instance of API server, and a notebook to create batch requests.  The challenge is that Prometheus requires API to provide an endpoint, which is not in the docker network.  Use `network_mode: host` for this.  Some developers might not like it, but if you are running everything in codespaces, you are safe.
+
+1. As a starter, the metrics only include,
+    1. request_total
+    1. latency_seconds
+    1. cache_hits_total
+
+An example of the collected metrics from a test run: [metrics-1.pdf](./metrics-1.pdf")
+
