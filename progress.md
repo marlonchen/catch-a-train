@@ -99,3 +99,12 @@
 
 An example of the collected metrics from a test run: [metrics-1.pdf](./metrics-1.pdf")
 
+## Step 10 - add another rail system
+
+* Your API gets really popular and people request that you add the DC metro to it, which you decide to do. Add them using this dataset:
+  * https://drive.google.com/file/d/1_Dlbd-5YhivitQ1dLgejW3_RKp0yNS7n/view?usp=drive_link
+  * Your API must remain backwards-compatible.
+
+1. use customer's coordinate to identify what station it is close by using all rail systems (in kml or geojson)
+1. refactored code to maintain readability
+ß

@@ -5,10 +5,13 @@ from fastapi.security import APIKeyHeader
 from prometheus_client import generate_latest
 
 from train_catcher.adaptor.cache_store import the_cache
-from train_catcher.data.rail import RAIL_SYSTEM
 from train_catcher.service.notifier import Notifier
 from train_catcher.service.persistence import TimeoutException
-from train_catcher.service.station_finder import METRICS_REG, StationFinder
+from train_catcher.service.station_finder import (
+    METRICS_REG,
+    NotWithinServiceAreaException,
+    StationFinder,
+)
 
 app = FastAPI()
 
@@ -50,18 +53,14 @@ async def find_nearest_station(
     phone: Optional[str] = None,
     api_key: str = Depends(_verify_api_key)
 ):
-    if not RAIL_SYSTEM.is_within_service_area(lat, lon):
-        raise HTTPException(
-            status_code=400,
-            detail="Location is outside service area"
-        )
-
     try:
-        finder = StationFinder(RAIL_SYSTEM.get_data_file())
+        finder = StationFinder()
         direction = finder.find_nearest_station(lat, lon)
         notifier = Notifier(phone)
         notifier.send_walking_direction(direction)
         return direction
+    except NotWithinServiceAreaException:
+        raise HTTPException(status_code=400, detail="Location is outside service area")
     except TimeoutException:
         raise HTTPException(status_code=429, detail="Location search in progress")
     except Exception as e:

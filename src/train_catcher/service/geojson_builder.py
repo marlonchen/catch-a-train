@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from train_catcher.data.station import Station
+
 
 class GeoJsonBuilder:
     def __init__(self):
@@ -18,18 +20,18 @@ class GeoJsonBuilder:
         })
         return self
     
-    def destination_station(self, station: dict) -> GeoJsonBuilder:
+    def destination_station(self, station: Station, distance: float) -> GeoJsonBuilder:
         self._features.append({
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [float(station['Longitude']), float(station['Latitude'])]
+                "coordinates": [float(station.longitude), float(station.latitude)]
             },
             "properties": {
                 'location_type': 'Destination Station',
-                "name": station['Station'],
-                "line": station['Line'],
-                "distance": station['Distance']
+                "name": station.name,
+                "line": station.line,
+                "distance": distance
             }
         })
         return self
