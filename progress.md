@@ -107,4 +107,3 @@ An example of the collected metrics from a test run: [metrics-1.pdf](./metrics-1
 
 1. use customer's coordinate to identify what station it is close by using all rail systems (in kml or geojson)
 1. refactored code to maintain readability
-ß

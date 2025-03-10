@@ -5,6 +5,8 @@ from fastapi.security import APIKeyHeader
 from prometheus_client import generate_latest
 
 from train_catcher.adaptor.cache_store import the_cache
+from train_catcher.service.plan_notif_scheduler import PlanNotificationScheduler
+from train_catcher.service.time_to_leave import TimeToLeavePlanner
 from train_catcher.service.notifier import Notifier
 from train_catcher.service.persistence import TimeoutException
 from train_catcher.service.station_finder import (
@@ -59,6 +61,29 @@ async def find_nearest_station(
         notifier = Notifier(phone)
         notifier.send_walking_direction(direction)
         return direction
+    except NotWithinServiceAreaException:
+        raise HTTPException(status_code=400, detail="Location is outside service area")
+    except TimeoutException:
+        raise HTTPException(status_code=429, detail="Location search in progress")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/time_to_leave")
+async def get_time_to_leave(
+    lat: float,
+    lon: float,
+    line: str,
+    direction: str,
+    phone: Optional[str] = None,
+    api_key: str = Depends(_verify_api_key)
+):
+    try:
+        planner = TimeToLeavePlanner()
+        plan = planner.plan_time_to_leave(lat, lon, line, direction)
+        scheduler = PlanNotificationScheduler(phone)
+        scheduler.schedule(plan)
+        return plan
     except NotWithinServiceAreaException:
         raise HTTPException(status_code=400, detail="Location is outside service area")
     except TimeoutException:

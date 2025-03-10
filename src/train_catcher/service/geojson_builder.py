@@ -36,10 +36,10 @@ class GeoJsonBuilder:
         })
         return self
     
-    def direction(self, direction: dict) -> GeoJsonBuilder:
-        route = direction['routes'][0]
+    def routes(self, routes: dict) -> GeoJsonBuilder:
+        route = routes['routes'][0]
         steps = route.get('legs', [{}])[0].get('steps', [])
-        waypoints = direction.get('waypoints', [])
+        waypoints = routes.get('waypoints', [])
 
         self._features.append({
             'type': 'Feature',

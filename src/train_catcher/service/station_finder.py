@@ -53,7 +53,7 @@ class StationFinder:
         
         try:
             station, distance = self._find_it(lat, lon)
-            direction = DirectionApi.find_walking_direction(
+            routes = DirectionApi.find_walking_direction(
                 lat, lon, 
                 station.latitude, station.longitude
             )
@@ -61,7 +61,7 @@ class StationFinder:
             builder = GeoJsonBuilder()
             builder.starting_point(lat, lon)
             builder.destination_station(station, distance)
-            builder.direction(direction)
+            builder.routes(routes)
             result = builder.build()
 
             self._persistence_service.save_direction(lat, lon, json.dumps(result))

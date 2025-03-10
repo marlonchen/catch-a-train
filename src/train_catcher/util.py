@@ -1,6 +1,10 @@
 from functools import cache
 import logging
 
+import pytz
+
+EASTERN_TZ = pytz.timezone('US/Eastern')
+
 
 @cache
 def get_logger(name: str) -> logging.Logger:

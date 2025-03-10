@@ -9,15 +9,15 @@ class Notifier:
         self._phone = phone
         
     @staticmethod
-    def _format_direction(direction: dict) -> str:
+    def _format_direction(routes: dict) -> str:
         """
         Format OSRM walking directions into a concise SMS message.
         Returns a string with step-by-step directions.
         """
-        if not direction or 'routes' not in direction or not direction['routes']:
+        if not routes or routes.get('properties', {}).get('steps'):
             return "Sorry, directions are not available at this time."
         
-        route = direction['routes'][0]
+        route = routes['properties']
         steps = []
         
         # Get total distance and duration
@@ -27,17 +27,24 @@ class Notifier:
         steps.append(f"Walk {distance} miles ({duration} mins):")
         
         # Format each step of the journey
-        if 'legs' in route and route['legs']:
-            for step in route['legs'][0].get('steps', []):
-                instruction = step.get('maneuver', {}).get('instruction', '')
-                if instruction:
-                    steps.append(f"- {instruction}")
+        for step in route['steps']:
+            instruction = step.get('maneuver', {}).get('instruction', '')
+            if instruction:
+                steps.append(f"- {instruction}")
         
         # Combine all steps into a single message
         return "\n".join(steps)
     
-    def send_walking_direction(self, directions: dict) -> None:
+    def send_walking_direction(self, direction: dict) -> str:
         """Send notification to user"""
-        if self._phone:
-            # Send SMS with walking directions
-            SmsSender.send(self._phone, self._format_direction(directions))
+        if not self._phone:
+            return ''
+        # Send SMS with walking directions
+        routes = [
+            feature
+            for feature in direction['features']
+            if feature['geometry']['type'] == 'LineString'
+        ][0]
+        instruction = self._format_direction(routes)
+        SmsSender.send(self._phone, instruction)
+        return instruction

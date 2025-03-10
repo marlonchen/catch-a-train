@@ -50,6 +50,25 @@ class RailSystemInfo:
                 nearest_station = station
         return nearest_station, min_distance
         
+    def get_nearest_station_by_line(self, lat, lon, line) -> tuple[Station, float]:
+        """
+        Checks if the provided latitude and longitude are within the defined service area.
+        """
+        stations = self._get_stations()
+        min_distance = self._max_radius
+        nearest_station = None
+        for station in stations:
+            if station.line.lower() != line.lower():
+                continue
+            distance = geodesic(
+                (lat, lon),
+                (station.latitude, station.longitude)
+            ).miles
+            if distance < min_distance:
+                min_distance = distance
+                nearest_station = station
+        return nearest_station, min_distance
+
 
 RAIL_SYSTEMS = {
     'SEPTA Regional Rail': RailSystemInfo(
