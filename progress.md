@@ -134,6 +134,27 @@ An example of the collected metrics from a test run: [metrics-1.pdf](./metrics-1
   1. A scheduled batch that runs every 2 minute for example and pick up the records by time range to send
 1. The previous point implements an "at least once" fashion.  In order to mark sure we are not sending too much to one number, we will need to implement "at most once" messaging by writing the send operations to database and validating count/frequency before sending new ones
 
+```mermaid
+---
+title: scheduled notification (dynamodb solutioin)
+---
+flowchart TB
+
+  subgraph time-to-leave-service
+    api --> notif-logic(Create Notification)
+  end
+
+  subgraph notification-service
+    notif-logic --o notifier(API)
+    notifier -- within 5 minutes --> validator(Validator/Deduper)
+    validator -.- r[(notification records)]
+    notifier -- otherwise --> d[(Dynamo Table with TTL)]
+    d -- TTL event --> ttl-handler
+    ttl-handler --> validator
+    validator --> sms
+  end
+```
+
 ---
 I didn't choose to implement a usage-based billing system, because it is going to run out of time.  There will be following componments,
 
@@ -143,13 +164,57 @@ I didn't choose to implement a usage-based billing system, because it is going t
 1. Certain states have regulations and compliance requirements regarding to payment processes, and we might want to start with some exclusions, which might require us to capture state of customer residence during account sign up.
 1. For this test, I think we will probably have to dive into the definition of scope, instead of assuming what the question is intended to cover.
 
+```mermaid
+---
+title: usage-based billing
+---
+flowchart TB
+
+  subgraph revenue-generating-service
+    api
+    usage-capturer(Usage Event Publisher)
+  end
+
+  api --> account-auth
+  account-auth --> usage-capturer
+
+  subgraph account-domain
+    account-reg(Account Registration Service)-.- account-db[(account db)]
+    good-standing(Account Good Standing Detector) -- account locked --> account-db
+    account-db -.-> account-auth(Account Auth Service)
+  end
+
+  usage-capturer -- usage events --> ebus1[[event bus]]
+  ebus1 --> event-store[(usage event store)]
+  ebus1 --> good-standing
+  event-store -.-> good-standing
+  event-store -.-> billing-calc
+
+  subgraph billing-service
+    trigger((cycle trigger)) --> billing-calc(Billing Calculation)
+    rules[(billing plan db)] -.- billing-calc
+    payment-db[(payment activity db)] -.- billing-calc
+    billing-calc -.- cycle-db[(billing cycle db)]
+  end
+
+  cycle-db -.- payment-outbound(payment outbound service)
+  payment-outbound --> payment-processor --> payment-inbound
+  payment-inbound(payment inbound service) -.- payment-db
+```
+
+
 ## Step 13 - deployment
 
-* When we make a choice of deployment tooling, we probably want to take into consideration of the opinion from the team who is going to supporting it.
+* Design and implement a deployment in the orchestration system of your choice, taking into account all relevant production deployment best practices, including handling varying load over time.
 
-1. CI tools - if the code is in github, it might be easiest to use github action to kick off unit test, integration test, publishing package/dock-image and etc.
-1. CD tools - many very mature tools to choose from: octopus, circleci, cloud native services, and etc.
+1. When we make a choice of deployment tooling, we probably want to take into consideration of the opinion from the team who is going to supporting it.
+
+1. CI tools - if the code is in github, it might be easiest to use github actions to kick off unit test, integration test, publishing package/dock-image and etc.
+
+1. CD tools - many off-the-shelf mature tools to choose from: octopus, circleci, cloud native services, and etc.
 
 1. Several points to consider when choosing a deployment tool:
-  1. it has to be friendly to both developers and devops team, so that both of them can work together.  Developers will be able to code for applications, and DevOps can provide libraries and support and manage secrets.
-  1. will be able to support roles if there is a need to support release management
+  1. it has to be friendly to both developers and devops team, so that both of them can work together.  Developers will be able to code for applications (so that DevOps won't be the bottleneck), and DevOps can provide libraries and support and manage secrets.
+  1. it should be able to support roles if there is a need for release management
+
+1. Canary (or rolling, blue-green) deployment might be needed if we choose not to use the cloud provider's managed services
