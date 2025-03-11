@@ -15,6 +15,12 @@ python -m venv venv
 pip install .
 ```
 
+1. Make script executable
+```
+chmod +x resource/**/*.sh
+chmod +x tests/integration/*.sh
+```
+
 1. Start external dependencies in docker environment
 ```
 docker compose down && docker compose up --build -d

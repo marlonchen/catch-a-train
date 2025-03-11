@@ -24,6 +24,7 @@ dependencies = [
     "boto3==1.37.10",
     "fastapi==0.115.9",
     "fastkml==1.1.0",
+    "freezegun==1.5.1",
     "geopy==2.4.1",
     "prometheus_client==0.21.1",
     "pytz==2025.1",

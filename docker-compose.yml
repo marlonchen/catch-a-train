@@ -20,6 +20,20 @@ services:
     volumes:
       - ./resource/redis/data:/data
 
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    environment:
+      - SERVICES=cloudformation,logs,iam,apigateway,lambda,dynamodb,events
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    volumes:
+      - ./resource/localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "4566:4566"
+
   hoverfly:
     image: spectolabs/hoverfly:latest
     container_name: hoverfly

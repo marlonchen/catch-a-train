@@ -172,3 +172,11 @@ cython_debug/
 
 # redis data
 dump.rdb
+
+# node modules
+node_modules
+
+# localstack/serverless
+.serverless
+
+.DS_Store

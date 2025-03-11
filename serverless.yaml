@@ -1,17 +1,32 @@
 service: catch-a-train
+frameworkVersion: '3'
+
+plugins:
+  - serverless-localstack
+  - serverless-dynamo-stream-plugin
 
 provider:
   name: aws
-  runtime: python3.12
+  runtime: python3.11
   region: us-east-1
 
 functions:
   getWalkingDirections:
-    handler: train_catcher.handler.awslanbda.handle
+    handler: train_catcher.handler.awslambda.handle_nearest_station
     events:
       - http:
           path: nearest_station
           method: get
+
+  schedulePlanNotification:
+    handler: train_catcher.handler.awslambda.handle_dyanmo_ttl
+    events:
+      - existingDynamoStream:
+          tableName: notif_schedule_table
+          streamType: OLD_IMAGE
+          startingPosition: LATEST
+          filterPatterns:
+            - eventName: [REMOVE]
 
 resources:
   Resources:

@@ -2,10 +2,14 @@ from fastapi import HTTPException
 
 from train_catcher.service.notifier import Notifier
 from train_catcher.service.persistence import TimeoutException
-from train_catcher.service.station_finder import NotWithinServiceAreaException, StationFinder
+from train_catcher.service.plan_notif_scheduler import PlanNotificationScheduler
+from train_catcher.service.station_finder import (
+    NotWithinServiceAreaException,
+    StationFinder,
+)
 
 
-def handler(event, context):
+def handle_nearest_station(event, context):
     # extract data from event
     query_string = event['queryStringParameters']
     lat = query_string['lat']
@@ -24,3 +28,14 @@ def handler(event, context):
         raise HTTPException(status_code=429, detail="Location search in progress")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def handle_dyanmo_ttl(event, context):
+    # extract data from event
+    data = event['OldImage']
+    phone = data['phone']
+    plan = data['plan']
+
+    # schedule notification
+    scheduler = PlanNotificationScheduler(phone)
+    scheduler.notify(plan)
