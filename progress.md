@@ -107,3 +107,49 @@ An example of the collected metrics from a test run: [metrics-1.pdf](./metrics-1
 
 1. use customer's coordinate to identify what station it is close by using all rail systems (in kml or geojson)
 1. refactored code to maintain readability
+
+## Step 11 - time to leave
+
+* Add a time-to-leave API endpoint for SEPTA. A new API endpoint accepts a location, a train line name, and a train direction. The API returns at what time someone must leave to get to the nearest train station on time to catch the next departing train of the given line and direction. Correctly handle if someone cannot make it to the station before the next departure.
+  * SEPTA has an API available for any required data: https://www3.septa.org/
+
+1. This one became much more time consuming than I expected, due to the following challenges:
+  1. The septa api includes a location endpoint that can return station by location, but the response doesn't include line information of a station
+  1. While the dataset on google drive (in zipped kml) has station and line relationship, but it uses a different set of line names
+  1. I ended up with creating a mapping on my own (with help from Claude) - still needs to be verified
+
+## Step 12 - time to leave notification
+
+* Implement one or both of these features:
+  * A time-to-leave notification system which sends notifications to a given SMS number until a given end time is reached or the notification is cancelled. Include an architecture diagram for this system.
+    * Ensure that the same number cannot be subscribed to too many time-to-leave notifications at the same time.
+  * A usage-based billing system for your APIs with monthly automatic invoices and a mock payment processor, or a payment processor of your choice. Ensure the system is auditable. Include an architecture diagram for this system. Prove that this system will always bill a customer accurately.
+
+1. I can talk thru some of the solutions, but will only implement one.
+1. There are two scenario,
+  1. if the time-to-leave is within 5 minutes or so, send the notification right away, or
+  1. create a record that some scheduling system will be able to pick up and send the notification
+1. Here are some of the solutions that came into my mind,
+  1. Any system that supports TTL, such as dynamodb.  We can insert a record into dynamo table with TTL that will go off 5 minute or so before time to leavve
+  1. A scheduled batch that runs every 2 minute for example and pick up the records by time range to send
+1. The previous point implements an "at least once" fashion.  In order to mark sure we are not sending too much to one number, we will need to implement "at most once" messaging by writing the send operations to database and validating count/frequency before sending new ones
+
+---
+I didn't choose to implement a usage-based billing system, because it is going to run out of time.  There will be following componments,
+
+1. Usage needs to be writing into a database, especially when it is related payments.  Prometheus or datadog won't be sufficient from operation and auditing perspective.
+1. A user management system
+1. Optional, but good to have: use event driven architecture to break usage capture, storage and/or payment calculations.  So that we can optimize write side and read side independently, in case of supporting of complicated calculations, such as different plans, tiered pricing, coupons, free trials, discounts, taxes, foriegn currencies, cryptos, bounced check, write-offs, cancellation and etc.
+1. For customer from certain states, a statement is required for billing.  We probably want to start with some exclusions, which will require us to capture state of customer residence during account sign up.
+1. For this test, I think we will probably have to dive into the definition of scope, instead of assuming what the question is intended to cover.
+
+## Step 13 - deployment
+
+* When we make a choice of deployment tooling, we probably want to take into consideration of the opinion from the team who is going to supporting it.
+
+1. CI tools - if the code is in github, it might be easiest to use github action to kick off unit test, integration test, publishing package/dock-image and etc.
+1. CD tools - many very mature tools to choose from: octopus, circleci, cloud native services, and etc.
+
+1. Several points to consider when choosing a deployment tool:
+  1. it has to be friendly to both developers and devops team, so that both of them can work together.  Developers will be able to code for applications, and DevOps can provide libraries and support and manage secrets.
+  1. will be able to support roles if there is a need to support release management
