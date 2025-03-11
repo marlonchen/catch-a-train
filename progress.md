@@ -140,7 +140,7 @@ I didn't choose to implement a usage-based billing system, because it is going t
 1. Usage needs to be writing into a database, especially when it is related payments.  Prometheus or datadog won't be sufficient from operation and auditing perspective.
 1. A user management system
 1. Optional, but good to have: use event driven architecture to break usage capture, storage and/or payment calculations.  So that we can optimize write side and read side independently, in case of supporting of complicated calculations, such as different plans, tiered pricing, coupons, free trials, discounts, taxes, foriegn currencies, cryptos, bounced check, write-offs, cancellation and etc.
-1. For customer from certain states, a statement is required for billing.  We probably want to start with some exclusions, which will require us to capture state of customer residence during account sign up.
+1. Certain states have regulations and compliance requirements regarding to payment processes, and we might want to start with some exclusions, which might require us to capture state of customer residence during account sign up.
 1. For this test, I think we will probably have to dive into the definition of scope, instead of assuming what the question is intended to cover.
 
 ## Step 13 - deployment
