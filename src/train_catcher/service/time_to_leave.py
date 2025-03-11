@@ -110,6 +110,7 @@ class TimeToLeavePlanner:
             must_leave_at = departure_time - timedelta(minutes=travel_time_minutes + SAFETY_BUFFER_MINUTES)
 
             return {
+                "station": station.name,
                 "next_train": next_train,
                 "must_leave_now": must_leave_at <= now,
                 "time_to_leave": max(must_leave_at, now)

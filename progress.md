@@ -166,7 +166,7 @@ I didn't choose to implement a usage-based billing system, because it is going t
 
 ```mermaid
 ---
-title: usage-based billing
+title: usage-based billing (I probably missed some details)
 ---
 flowchart TB
 
@@ -189,6 +189,7 @@ flowchart TB
   ebus1 --> good-standing
   event-store -.-> good-standing
   event-store -.-> billing-calc
+  billing-calc --account suspended--> ebus1
 
   subgraph billing-service
     trigger((cycle trigger)) --> billing-calc(Billing Calculation)
