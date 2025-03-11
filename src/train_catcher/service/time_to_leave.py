@@ -9,6 +9,22 @@ from train_catcher.util import EASTERN_TZ, get_logger
 
 SAFETY_BUFFER_MINUTES = 5
 
+SEPTA_GIS_LINE_NAMES = {
+    # mapping from API line name to GIS line name
+    "Airport": "Airport Line",
+    "Chestnut Hill East": "Chestnut Hill East Line",
+    "Chestnut Hill West": "Chestnut Hill West Line",
+    "Cynwyd": "Cynwyd Line",
+    "Fox Chase": "Fox Chase Line",
+    "Lansdale/Doylestown": "Lansdale/Doylestown Line",
+    "Media/Wawa": "Media/Wawa Line",
+    "Manayunk/Norristown": "Manayunk/Norristown Line",
+    "Paoli/Thorndale": "Paoli/Thorndale Line",
+    "Trenton": "Trenton Line",
+    "Warminster": "Warminster Line",
+    "West Trenton": "West Trenton Line",
+    "Wilmington/Newark": "Wilmington/Newark Line",
+}
 
 class TimeToLeavePlanner:
     _train_schedule_api: TrainScheduleApi = TrainScheduleApi()
@@ -17,7 +33,8 @@ class TimeToLeavePlanner:
     @classmethod
     def _get_nearest_station_by_line(cls, lat: float, lon: float, line: str) -> Station:
         rail = RAIL_SYSTEMS['SEPTA Regional Rail']
-        station, _ = rail.get_nearest_station_by_line(lat, lon, line)
+        gis_line = SEPTA_GIS_LINE_NAMES[line]
+        station, _ = rail.get_nearest_station_by_line(lat, lon, gis_line)
         return station
 
     @classmethod
@@ -34,14 +51,15 @@ class TimeToLeavePlanner:
         else:
             direction_param = 'S'
             direction_node = 'Southbound'
-        data = cls._train_schedule_api.get_next_train(station_name, direction_param, 50)
+        next_train = cls._train_schedule_api.get_next_train(station_name, direction_param, 50)
+        data = [v for _, v in next_train.items()][0]
         if data and isinstance(data, list) and data[0] and direction_node in data[0]:
             time_to_arrive = datetime.now(EASTERN_TZ) + timedelta(minutes=minutes_to_travel)
             for train in data[0][direction_node]:
                 # find the line that passes the station
                 if train["line"].lower() == line.lower():
                     departure_time_str = train["depart_time"]
-                    departure_time = datetime.fromisoformat(departure_time_str)
+                    departure_time = EASTERN_TZ.localize(datetime.fromisoformat(departure_time_str))
                     # find the train with enough time to walk there
                     if departure_time >= time_to_arrive:
                         return train
@@ -60,7 +78,7 @@ class TimeToLeavePlanner:
             lat, lon,
             station.latitude, station.longitude
         )
-        route = routes['routes'][0]
+        route = routes.get('routes', [0])[0]
         return route['duration'] / 60
 
     @classmethod
@@ -83,11 +101,11 @@ class TimeToLeavePlanner:
                     "no matching train found for '%s' of line '%s' and direction '%s'",
                     station.name, line, direction
                 )
-                return None
+                return {}
             
             # step 3: find when to leave
             departure_time_str = next_train["depart_time"]
-            departure_time = datetime.fromisoformat(departure_time_str)
+            departure_time = EASTERN_TZ.localize(datetime.fromisoformat(departure_time_str))
             now = datetime.now(EASTERN_TZ)
             must_leave_at = departure_time - timedelta(minutes=travel_time_minutes + SAFETY_BUFFER_MINUTES)
 

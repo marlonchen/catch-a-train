@@ -7,7 +7,7 @@ def test_happy_path():
     # line = 'Media/Wawa'
     lat = 39.9656
     lon = -75.1810
-    line = 'Airport Line'
+    line = 'Airport'
 
     # Act
     plan = TimeToLeavePlanner().plan_time_to_leave(
